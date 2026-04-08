@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import EstimateurImmo from "./EstimateurImmo"
 import { supabase } from "./supabase"
 
 const CAT_COLORS = {
@@ -180,55 +181,6 @@ function FicheActif({ asset, onClose, onSave }) {
   )
 }
 
-function EstimateurImmo({ onValider }) {
-  const [ville, setVille] = useState('')
-  const [typeBien, setTypeBien] = useState('appartement')
-  const [surface, setSurface] = useState('')
-  const villes = Object.keys(PRIX_M2).sort()
-
-  const prixM2 = ville ? PRIX_M2[ville]?.[typeBien] : null
-  const estimation = prixM2 && surface ? Math.round(prixM2 * parseFloat(surface)) : null
-
-  return (
-    <div style={{ background: '#e6f0fb', border: '1px solid #b5d4f4', borderRadius: 12, padding: '16px 18px', marginBottom: 16 }}>
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#0c447c', marginBottom: 12 }}>Estimateur — je ne connais pas la valeur du bien</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
-        <div>
-          <label style={{ fontSize: 11, color: '#1a5fa0', fontWeight: 500, display: 'block', marginBottom: 4 }}>Ville</label>
-          <select value={ville} onChange={e => setVille(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #b5d4f4', borderRadius: 7, fontSize: 13, background: '#fff' }}>
-            <option value="">Choisir une ville</option>
-            {villes.map(v => <option key={v} value={v}>{v}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: 11, color: '#1a5fa0', fontWeight: 500, display: 'block', marginBottom: 4 }}>Type de bien</label>
-          <select value={typeBien} onChange={e => setTypeBien(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #b5d4f4', borderRadius: 7, fontSize: 13, background: '#fff' }}>
-            <option value="appartement">Appartement</option>
-            <option value="maison">Maison</option>
-            <option value="immeuble">Immeuble</option>
-            <option value="terrain">Terrain</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: 11, color: '#1a5fa0', fontWeight: 500, display: 'block', marginBottom: 4 }}>Surface (m²)</label>
-          <input type="number" value={surface} onChange={e => setSurface(e.target.value)} placeholder="Ex: 65" style={{ width: '100%', padding: '8px 10px', border: '1px solid #b5d4f4', borderRadius: 7, fontSize: 13 }} />
-        </div>
-      </div>
-      {estimation && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', borderRadius: 10, padding: '12px 16px', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 12, color: '#4a5578', marginBottom: 3 }}>{typeBien} de {surface} m² à {ville} — {prixM2?.toLocaleString('fr-FR')} €/m²</div>
-            <div style={{ fontSize: 22, fontWeight: 500, color: '#0f1b35' }}>{fmt(estimation)}</div>
-            <div style={{ fontSize: 11, color: '#8a93b0', marginTop: 2 }}>Estimation indicative basée sur les prix du marché 2025-2026</div>
-          </div>
-          <button onClick={() => onValider(estimation)} style={{ background: '#1d7a4e', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            Utiliser →
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
 
 function Sidebar({ page, setPage, user, onLogout }) {
   const nav = [

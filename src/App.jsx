@@ -1,62 +1,14 @@
 import { useState, useEffect } from "react"
-import EstimateurImmo from "./EstimateurImmo"
 import { supabase } from "./supabase"
+import EstimateurImmo from "./EstimateurImmo"
 
 const CAT_COLORS = {
   immobilier: '#1d7a4e', financier: '#1a5fa0', assurance: '#c9922a',
-  pee: '#7a4e1d', per: '#9b2fa0', crypto: '#a03030', autre: '#4a5578'
+  pee: '#7a4e1d', epargne: '#9b2fa0', per: '#9b2fa0', crypto: '#a03030', autre: '#4a5578'
 }
 const CAT_LABELS = {
   immobilier: 'Immobilier', financier: 'Financier', assurance: 'Assurance-vie',
-  pee: 'PEE/PERCO', per: 'PER', crypto: 'Crypto', autre: 'Autre'
-}
-
-const PRIX_M2 = {
-  'Paris': { appartement: 9600, maison: 11000, immeuble: 9200, terrain: 2500 },
-  'Lyon': { appartement: 4800, maison: 5200, immeuble: 4500, terrain: 800 },
-  'Marseille': { appartement: 3200, maison: 3500, immeuble: 3000, terrain: 450 },
-  'Bordeaux': { appartement: 4300, maison: 4800, immeuble: 4100, terrain: 600 },
-  'Toulouse': { appartement: 3600, maison: 3900, immeuble: 3400, terrain: 500 },
-  'Nice': { appartement: 5200, maison: 5800, immeuble: 5000, terrain: 1200 },
-  'Nantes': { appartement: 3800, maison: 4100, immeuble: 3600, terrain: 550 },
-  'Strasbourg': { appartement: 3400, maison: 3700, immeuble: 3200, terrain: 480 },
-  'Montpellier': { appartement: 3500, maison: 3800, immeuble: 3300, terrain: 520 },
-  'Lille': { appartement: 3100, maison: 3400, immeuble: 2900, terrain: 420 },
-  'Rennes': { appartement: 4000, maison: 4300, immeuble: 3800, terrain: 580 },
-  'Reims': { appartement: 2600, maison: 2900, immeuble: 2400, terrain: 320 },
-  'Grenoble': { appartement: 2900, maison: 3200, immeuble: 2700, terrain: 400 },
-  'Toulon': { appartement: 3000, maison: 3300, immeuble: 2800, terrain: 420 },
-  'Dijon': { appartement: 2700, maison: 3000, immeuble: 2500, terrain: 350 },
-  'Angers': { appartement: 3000, maison: 3200, immeuble: 2800, terrain: 430 },
-  'Nîmes': { appartement: 2400, maison: 2700, immeuble: 2200, terrain: 300 },
-  'Saint-Étienne': { appartement: 1400, maison: 1600, immeuble: 1300, terrain: 200 },
-  'Brest': { appartement: 2800, maison: 3000, immeuble: 2600, terrain: 380 },
-  'Caen': { appartement: 2900, maison: 3200, immeuble: 2700, terrain: 380 },
-  'Aix-en-Provence': { appartement: 5100, maison: 5600, immeuble: 4900, terrain: 900 },
-  'Clermont-Ferrand': { appartement: 2300, maison: 2600, immeuble: 2100, terrain: 280 },
-  'Rouen': { appartement: 2800, maison: 3100, immeuble: 2600, terrain: 360 },
-  'Nancy': { appartement: 2500, maison: 2800, immeuble: 2300, terrain: 320 },
-  'Metz': { appartement: 2400, maison: 2700, immeuble: 2200, terrain: 300 },
-  'Perpignan': { appartement: 2100, maison: 2400, immeuble: 1900, terrain: 260 },
-  'Orléans': { appartement: 2800, maison: 3000, immeuble: 2600, terrain: 380 },
-  'Amiens': { appartement: 2200, maison: 2500, immeuble: 2000, terrain: 270 },
-  'Le Havre': { appartement: 2200, maison: 2500, immeuble: 2000, terrain: 280 },
-  'Limoges': { appartement: 1800, maison: 2000, immeuble: 1600, terrain: 220 },
-  'La Rochelle': { appartement: 4000, maison: 4400, immeuble: 3800, terrain: 650 },
-  'Pau': { appartement: 2500, maison: 2800, immeuble: 2300, terrain: 320 },
-  'Biarritz': { appartement: 8500, maison: 9500, immeuble: 8000, terrain: 1800 },
-  'Cannes': { appartement: 7500, maison: 8500, immeuble: 7200, terrain: 1600 },
-  'Antibes': { appartement: 5500, maison: 6200, immeuble: 5300, terrain: 1100 },
-  'Bayonne': { appartement: 4200, maison: 4600, immeuble: 4000, terrain: 680 },
-  'Annecy': { appartement: 5500, maison: 6000, immeuble: 5300, terrain: 1000 },
-  'Tours': { appartement: 3000, maison: 3300, immeuble: 2800, terrain: 420 },
-  'Versailles': { appartement: 7500, maison: 8500, immeuble: 7200, terrain: 1600 },
-  'Saint-Malo': { appartement: 5000, maison: 5500, immeuble: 4800, terrain: 900 },
-  'Chambéry': { appartement: 3000, maison: 3300, immeuble: 2800, terrain: 430 },
-  'Poitiers': { appartement: 2300, maison: 2600, immeuble: 2100, terrain: 290 },
-  'Valence': { appartement: 2400, maison: 2700, immeuble: 2200, terrain: 300 },
-  'Quimper': { appartement: 2400, maison: 2700, immeuble: 2200, terrain: 320 },
-  'Besançon': { appartement: 2500, maison: 2800, immeuble: 2300, terrain: 310 },
+  pee: 'PEE/PERCO', epargne: 'Épargne', per: 'Épargne', crypto: 'Crypto', autre: 'Autre'
 }
 
 function fmt(n) {
@@ -65,6 +17,7 @@ function fmt(n) {
 }
 function fmtPct(n) { return (n >= 0 ? '+' : '') + Number(n).toFixed(1) + '%' }
 
+// ─── AUTH ────────────────────────────────────────────────────────────────────
 function AuthPage({ onLogin }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -119,13 +72,12 @@ function AuthPage({ onLogin }) {
   )
 }
 
+// ─── FICHE ACTIF ─────────────────────────────────────────────────────────────
 function FicheActif({ asset, onClose, onSave }) {
   const [form, setForm] = useState({ ...asset })
   const [saving, setSaving] = useState(false)
 
-  async function handleSave() {
-    setSaving(true); await onSave(form); setSaving(false); onClose()
-  }
+  async function handleSave() { setSaving(true); await onSave(form); setSaving(false); onClose() }
 
   const pv = (form.valeur_actuelle || 0) - (form.valeur_achat || 0)
   const pvPct = form.valeur_achat > 0 ? (pv / form.valeur_achat * 100).toFixed(1) : 0
@@ -135,7 +87,7 @@ function FicheActif({ asset, onClose, onSave }) {
       <div style={{ background: '#fff', borderRadius: 16, padding: '28px', width: 560, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 18, fontWeight: 500, color: '#0f1b35' }}>{form.nom}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#8a93b0', lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#8a93b0' }}>×</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 20 }}>
           {[['Valeur achat', fmt(form.valeur_achat), null], ['Valeur actuelle', fmt(form.valeur_actuelle), null], ['Plus-value', fmt(pv) + ' (' + (pv >= 0 ? '+' : '') + pvPct + '%)', pv >= 0 ? '#1d7a4e' : '#b83030']].map(([l, v, c]) => (
@@ -146,19 +98,12 @@ function FicheActif({ asset, onClose, onSave }) {
           ))}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-          {[
-            { label: "Nom de l'actif", key: 'nom', type: 'text' },
-            { label: 'Catégorie', key: 'categorie', type: 'select' },
-            { label: "Valeur d'achat (€)", key: 'valeur_achat', type: 'number' },
-            { label: 'Valeur actuelle (€)', key: 'valeur_actuelle', type: 'number' },
-            { label: "Date d'acquisition", key: 'date_acquisition', type: 'date' },
-            { label: 'Rendement annuel (%)', key: 'rendement_annuel', type: 'number' },
-          ].map(f => (
+          {[{ label: "Nom de l'actif", key: 'nom', type: 'text' }, { label: 'Catégorie', key: 'categorie', type: 'select' }, { label: "Valeur d'achat (€)", key: 'valeur_achat', type: 'number' }, { label: 'Valeur actuelle (€)', key: 'valeur_actuelle', type: 'number' }, { label: "Date d'acquisition", key: 'date_acquisition', type: 'date' }, { label: 'Rendement annuel (%)', key: 'rendement_annuel', type: 'number' }].map(f => (
             <div key={f.key}>
               <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>{f.label}</label>
               {f.type === 'select' ? (
                 <select value={form[f.key] || ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13, background: '#fff' }}>
-                  {Object.entries(CAT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  {Object.entries({ immobilier: 'Immobilier', financier: 'Financier', assurance: 'Assurance-vie', pee: 'PEE/PERCO', epargne: 'Épargne', crypto: 'Crypto', autre: 'Autre' }).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               ) : (
                 <input type={f.type} value={form[f.key] || ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13 }} />
@@ -173,7 +118,7 @@ function FicheActif({ asset, onClose, onSave }) {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={{ background: 'transparent', border: '1px solid #e0e2ea', borderRadius: 8, padding: '9px 18px', fontSize: 13, cursor: 'pointer', color: '#4a5578' }}>Annuler</button>
           <button onClick={handleSave} disabled={saving} style={{ background: '#0f1b35', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
-            {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+            {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -181,14 +126,8 @@ function FicheActif({ asset, onClose, onSave }) {
   )
 }
 
-
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 function Sidebar({ page, setPage, user, onLogout }) {
-  const nav = [
-    { id: 'dashboard', label: 'Tableau de bord' },
-    { id: 'patrimoine', label: 'Patrimoine' },
-    { id: 'simulateur', label: 'Simulateur' },
-    { id: 'projections', label: 'Projections' },
-  ]
   return (
     <div style={{ width: 220, minWidth: 220, background: '#0f1b35', display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -200,36 +139,28 @@ function Sidebar({ page, setPage, user, onLogout }) {
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', wordBreak: 'break-all' }}>{user?.email}</div>
       </div>
       <nav style={{ flex: 1, padding: '12px 0' }}>
-        {nav.map(n => (
+        {[{ id: 'dashboard', label: 'Tableau de bord' }, { id: 'patrimoine', label: 'Patrimoine' }, { id: 'simulateur', label: 'Simulateur' }, { id: 'projections', label: 'Projections' }].map(n => (
           <div key={n.id} onClick={() => setPage(n.id)} style={{ padding: '10px 18px', cursor: 'pointer', fontSize: 13, color: page === n.id ? '#fff' : 'rgba(255,255,255,0.5)', background: page === n.id ? 'rgba(201,146,42,0.15)' : 'transparent', borderLeft: page === n.id ? '3px solid #c9922a' : '3px solid transparent', transition: 'all 0.15s' }}>
             {n.label}
           </div>
         ))}
       </nav>
       <div style={{ padding: '14px 18px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-        <button onClick={onLogout} style={{ width: '100%', background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '8px', fontSize: 12, cursor: 'pointer' }}>
-          Déconnexion
-        </button>
+        <button onClick={onLogout} style={{ width: '100%', background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '8px', fontSize: 12, cursor: 'pointer' }}>Déconnexion</button>
       </div>
     </div>
   )
 }
 
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
 function Dashboard({ assets, onOpenFiche }) {
   const total = assets.reduce((s, a) => s + (a.valeur_actuelle || 0), 0)
   const immo = assets.filter(a => a.categorie === 'immobilier').reduce((s, a) => s + a.valeur_actuelle, 0)
-  const fi = assets.filter(a => ['financier', 'assurance', 'pee', 'per', 'crypto'].includes(a.categorie)).reduce((s, a) => s + a.valeur_actuelle, 0)
-  const pvTotal = assets.reduce((s, a) => s + (a.valeur_actuelle - a.valeur_achat), 0)
-
+  const fi = assets.filter(a => ['financier', 'assurance', 'pee', 'epargne', 'per', 'crypto'].includes(a.categorie)).reduce((s, a) => s + a.valeur_actuelle, 0)
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
-        {[
-          { label: 'Patrimoine total', value: fmt(total), sub: assets.length + ' actifs' },
-          { label: 'Immobilier', value: fmt(immo), sub: total > 0 ? Math.round(immo / total * 100) + '% du total' : '—' },
-          { label: 'Financier', value: fmt(fi), sub: total > 0 ? Math.round(fi / total * 100) + '% du total' : '—' },
-          { label: 'Plus-value totale', value: fmt(pvTotal), sub: pvTotal >= 0 ? 'gain depuis acquisition' : 'perte depuis acquisition' },
-        ].map((k, i) => (
+        {[{ label: 'Patrimoine total', value: fmt(total), sub: assets.length + ' actifs' }, { label: 'Immobilier', value: fmt(immo), sub: total > 0 ? Math.round(immo / total * 100) + '% du total' : '—' }, { label: 'Financier', value: fmt(fi), sub: total > 0 ? Math.round(fi / total * 100) + '% du total' : '—' }, { label: 'Plus-value totale', value: fmt(assets.reduce((s, a) => s + (a.valeur_actuelle - a.valeur_achat), 0)), sub: 'depuis acquisition' }].map((k, i) => (
           <div key={i} style={{ background: '#f0f1f6', borderRadius: 10, padding: '14px 16px' }}>
             <div style={{ fontSize: 11, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>{k.label}</div>
             <div style={{ fontSize: 22, fontWeight: 500, color: '#0f1b35' }}>{k.value}</div>
@@ -238,37 +169,32 @@ function Dashboard({ assets, onOpenFiche }) {
         ))}
       </div>
       <div style={{ background: '#fff', border: '1px solid #e8eaf0', borderRadius: 14, padding: '18px 20px' }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: '#4a5578', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14 }}>
-          Actifs — cliquez sur une ligne pour voir et modifier la fiche
-        </div>
+        <div style={{ fontSize: 12, fontWeight: 500, color: '#4a5578', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14 }}>Actifs — cliquez sur une ligne pour voir et modifier la fiche</div>
         {assets.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#8a93b0', padding: '30px 0', fontSize: 14 }}>Aucun actif — ajoutez-en dans la section Patrimoine</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>{['Actif', 'Catégorie', 'Valeur actuelle', '+/- value', ''].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', borderBottom: '1px solid #e8eaf0' }}>{h}</th>
-              ))}</tr>
-            </thead>
-            <tbody>
-              {assets.map(a => {
-                const pv = a.valeur_actuelle - a.valeur_achat
-                const pvPct = a.valeur_achat > 0 ? (pv / a.valeur_achat * 100) : 0
-                return (
-                  <tr key={a.id} onClick={() => onOpenFiche(a)} style={{ cursor: 'pointer' }}>
-                    <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontWeight: 500 }}>{a.nom}</td>
-                    <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6' }}>
-                      <span style={{ background: CAT_COLORS[a.categorie] + '18', color: CAT_COLORS[a.categorie], padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{CAT_LABELS[a.categorie]}</span>
-                    </td>
-                    <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontWeight: 500 }}>{fmt(a.valeur_actuelle)}</td>
-                    <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6' }}>
-                      <span style={{ background: pv >= 0 ? '#e8f5ee' : '#faeaea', color: pv >= 0 ? '#1d7a4e' : '#b83030', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{pv >= 0 ? '+' : ''}{fmtPct(pvPct)}</span>
-                    </td>
-                    <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontSize: 12, color: '#1a5fa0' }}>Voir fiche →</td>
-                  </tr>
-                )
-              })}
-            </tbody>
+            <thead><tr>{['Actif', 'Catégorie', 'Valeur actuelle', '+/- value', ''].map(h => (
+              <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', borderBottom: '1px solid #e8eaf0' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{assets.map(a => {
+              const pv = a.valeur_actuelle - a.valeur_achat
+              const pvPct = a.valeur_achat > 0 ? (pv / a.valeur_achat * 100) : 0
+              const cat = a.categorie === 'per' ? 'epargne' : a.categorie
+              return (
+                <tr key={a.id} onClick={() => onOpenFiche(a)} style={{ cursor: 'pointer' }}>
+                  <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontWeight: 500 }}>{a.nom}</td>
+                  <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6' }}>
+                    <span style={{ background: (CAT_COLORS[cat] || '#4a5578') + '18', color: CAT_COLORS[cat] || '#4a5578', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{CAT_LABELS[cat] || cat}</span>
+                  </td>
+                  <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontWeight: 500 }}>{fmt(a.valeur_actuelle)}</td>
+                  <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6' }}>
+                    <span style={{ background: pv >= 0 ? '#e8f5ee' : '#faeaea', color: pv >= 0 ? '#1d7a4e' : '#b83030', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{pv >= 0 ? '+' : ''}{fmtPct(pvPct)}</span>
+                  </td>
+                  <td style={{ padding: '11px 12px', borderBottom: '1px solid #f0f1f6', fontSize: 12, color: '#1a5fa0' }}>Voir fiche →</td>
+                </tr>
+              )
+            })}</tbody>
           </table>
         )}
       </div>
@@ -276,13 +202,16 @@ function Dashboard({ assets, onOpenFiche }) {
   )
 }
 
+// ─── PATRIMOINE ───────────────────────────────────────────────────────────────
 function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('tous')
   const [showEstimateur, setShowEstimateur] = useState(false)
   const [form, setForm] = useState({ nom: '', categorie: 'immobilier', valeur_achat: '', valeur_actuelle: '', date_acquisition: '', rendement_annuel: '', notes: '' })
   const [saving, setSaving] = useState(false)
-  const filtered = filter === 'tous' ? assets : assets.filter(a => a.categorie === filter)
+
+  const CATS = { immobilier: 'Immobilier', financier: 'Financier', assurance: 'Assurance-vie', pee: 'PEE/PERCO', epargne: 'Épargne', crypto: 'Crypto', autre: 'Autre' }
+  const filtered = filter === 'tous' ? assets : assets.filter(a => (a.categorie === 'per' ? 'epargne' : a.categorie) === filter)
   const total = assets.reduce((s, a) => s + (a.valeur_actuelle || 0), 0)
 
   async function handleAdd(e) {
@@ -296,9 +225,9 @@ function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12 }}>
         <div style={{ display: 'flex', gap: 4, background: '#f0f1f6', borderRadius: 10, padding: 3, flexWrap: 'wrap' }}>
-          {['tous', 'immobilier', 'financier', 'assurance', 'per', 'crypto', 'autre'].map(f => (
+          {['tous', ...Object.keys(CATS)].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 11px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, background: filter === f ? '#fff' : 'transparent', color: filter === f ? '#0f1b35' : '#8a93b0', boxShadow: filter === f ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }}>
-              {f === 'tous' ? 'Tous' : CAT_LABELS[f]}
+              {f === 'tous' ? 'Tous' : CATS[f]}
             </button>
           ))}
         </div>
@@ -319,7 +248,7 @@ function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
               <div>
                 <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>Catégorie</label>
                 <select value={form.categorie} onChange={e => { setForm({ ...form, categorie: e.target.value }); setShowEstimateur(false) }} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13, background: '#fff' }}>
-                  {Object.entries(CAT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  {Object.entries(CATS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <div>
@@ -351,7 +280,7 @@ function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
             )}
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>Notes</label>
-              <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Locatif, nue-propriété, défiscalisation..." style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13 }} />
+              <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Locatif, nue-propriété..." style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13 }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button type="submit" disabled={saving} style={{ background: '#c9922a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
@@ -367,38 +296,35 @@ function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
           <div style={{ textAlign: 'center', color: '#8a93b0', padding: '30px 0', fontSize: 14 }}>Aucun actif dans cette catégorie</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>{['Actif', 'Catégorie', "Valeur d'achat", 'Valeur actuelle', '+/- value', 'Poids', ''].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', borderBottom: '1px solid #e8eaf0' }}>{h}</th>
-              ))}</tr>
-            </thead>
-            <tbody>
-              {filtered.map(a => {
-                const pv = a.valeur_actuelle - a.valeur_achat
-                const pvPct = a.valeur_achat > 0 ? (pv / a.valeur_achat * 100) : 0
-                const poids = total > 0 ? (a.valeur_actuelle / total * 100).toFixed(1) : 0
-                return (
-                  <tr key={a.id} onClick={() => onOpenFiche(a)} style={{ borderBottom: '1px solid #f0f1f6', cursor: 'pointer' }}>
-                    <td style={{ padding: '11px 12px', fontWeight: 500 }}>
-                      <div>{a.nom}</div>
-                      {a.notes && <div style={{ fontSize: 11, color: '#8a93b0', marginTop: 2 }}>{a.notes}</div>}
-                    </td>
-                    <td style={{ padding: '11px 12px' }}>
-                      <span style={{ background: CAT_COLORS[a.categorie] + '18', color: CAT_COLORS[a.categorie], padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{CAT_LABELS[a.categorie]}</span>
-                    </td>
-                    <td style={{ padding: '11px 12px' }}>{fmt(a.valeur_achat)}</td>
-                    <td style={{ padding: '11px 12px', fontWeight: 500 }}>{fmt(a.valeur_actuelle)}</td>
-                    <td style={{ padding: '11px 12px' }}>
-                      <span style={{ background: pv >= 0 ? '#e8f5ee' : '#faeaea', color: pv >= 0 ? '#1d7a4e' : '#b83030', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{pv >= 0 ? '+' : ''}{fmtPct(pvPct)}</span>
-                    </td>
-                    <td style={{ padding: '11px 12px', fontSize: 12, color: '#4a5578' }}>{poids}%</td>
-                    <td style={{ padding: '11px 12px' }} onClick={e => e.stopPropagation()}>
-                      <button onClick={() => { if (confirm('Supprimer cet actif ?')) onDelete(a.id) }} style={{ background: '#faeaea', color: '#b83030', border: '1px solid rgba(184,48,48,0.15)', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Suppr.</button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
+            <thead><tr>{['Actif', 'Catégorie', "Valeur d'achat", 'Valeur actuelle', '+/- value', 'Poids', ''].map(h => (
+              <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', borderBottom: '1px solid #e8eaf0' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{filtered.map(a => {
+              const pv = a.valeur_actuelle - a.valeur_achat
+              const pvPct = a.valeur_achat > 0 ? (pv / a.valeur_achat * 100) : 0
+              const poids = total > 0 ? (a.valeur_actuelle / total * 100).toFixed(1) : 0
+              const cat = a.categorie === 'per' ? 'epargne' : a.categorie
+              return (
+                <tr key={a.id} onClick={() => onOpenFiche(a)} style={{ borderBottom: '1px solid #f0f1f6', cursor: 'pointer' }}>
+                  <td style={{ padding: '11px 12px', fontWeight: 500 }}>
+                    <div>{a.nom}</div>
+                    {a.notes && <div style={{ fontSize: 11, color: '#8a93b0', marginTop: 2 }}>{a.notes}</div>}
+                  </td>
+                  <td style={{ padding: '11px 12px' }}>
+                    <span style={{ background: (CAT_COLORS[cat] || '#4a5578') + '18', color: CAT_COLORS[cat] || '#4a5578', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{CAT_LABELS[cat] || cat}</span>
+                  </td>
+                  <td style={{ padding: '11px 12px' }}>{fmt(a.valeur_achat)}</td>
+                  <td style={{ padding: '11px 12px', fontWeight: 500 }}>{fmt(a.valeur_actuelle)}</td>
+                  <td style={{ padding: '11px 12px' }}>
+                    <span style={{ background: pv >= 0 ? '#e8f5ee' : '#faeaea', color: pv >= 0 ? '#1d7a4e' : '#b83030', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{pv >= 0 ? '+' : ''}{fmtPct(pvPct)}</span>
+                  </td>
+                  <td style={{ padding: '11px 12px', fontSize: 12, color: '#4a5578' }}>{poids}%</td>
+                  <td style={{ padding: '11px 12px' }} onClick={e => e.stopPropagation()}>
+                    <button onClick={() => { if (confirm('Supprimer cet actif ?')) onDelete(a.id) }} style={{ background: '#faeaea', color: '#b83030', border: '1px solid rgba(184,48,48,0.15)', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Suppr.</button>
+                  </td>
+                </tr>
+              )
+            })}</tbody>
           </table>
         )}
       </div>
@@ -406,82 +332,130 @@ function Patrimoine({ assets, onAdd, onDelete, onOpenFiche }) {
   )
 }
 
+// ─── SIMULATEUR ───────────────────────────────────────────────────────────────
 function Simulateur() {
-  const [p, setP] = useState({ capital: 10000, duree: 10, taux: 5, fraisGest: 1, fraisEntree: 2, mensuel: 200, withVers: false, withInflation: false, inflation: 2, freq: 12 })
-  const tauxNet = (p.taux - p.fraisGest) / 100
+  const [p, setP] = useState({
+    capital: 10000, duree: 10, taux: 5,
+    fraisGest: 1.0, fraisEntree: 2.0,
+    mensuel: 200, withVers: false, freq: 12
+  })
+
+  // Calcul intérêts composés
+  // Frais d'entrée appliqués au capital initial ET aux versements périodiques
+  // Frais de gestion soustraits en fin d'année avant capitalisation
   const capitalNet = p.capital * (1 - p.fraisEntree / 100)
   const annualVers = p.withVers ? p.mensuel * p.freq : 0
-  let cap = capitalNet, totalFrais = p.capital * p.fraisEntree / 100
+  const annualVersNet = annualVers * (1 - p.fraisEntree / 100)
+
+  let cap = capitalNet
+  let totalVersements = capitalNet
+  let totalInterets = 0
   const rows = []
+
   for (let y = 1; y <= p.duree; y++) {
     const debut = cap
-    const interets = (cap + annualVers / 2) * tauxNet
-    const fraisAn = (cap + annualVers / 2) * (p.fraisGest / 100)
-    cap = cap + annualVers + interets; totalFrais += fraisAn
-    rows.push({ y, debut, interets, fraisAn, fin: cap })
+    cap += annualVersNet
+    const interetsBruts = cap * (p.taux / 100)
+    const fraisGestAn = cap * (p.fraisGest / 100)
+    const interetsNets = interetsBruts - fraisGestAn
+    cap += interetsNets
+    totalVersements += annualVersNet
+    totalInterets += interetsNets
+    rows.push({ y, debut, versements: annualVersNet, interets: interetsNets, fin: cap })
   }
-  const totalInvesti = capitalNet + annualVers * p.duree
-  const totalInterets = cap - totalInvesti
-  const capReel = p.withInflation ? cap / Math.pow(1 + p.inflation / 100, p.duree) : cap
-  const sl = (key, min, max, step = 1) => (
+
+  const capitalFinal = cap
+  const propVersements = totalVersements > 0 ? (totalVersements / capitalFinal * 100) : 0
+  const propInterets = capitalFinal > 0 ? (totalInterets / capitalFinal * 100) : 0
+
+  const sl = (key, min, max, step, label) => (
     <div style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#4a5578', marginBottom: 5 }}>
-        <span>{{ capital: 'Capital initial', duree: 'Durée', taux: 'Taux annuel brut', fraisGest: 'Frais de gestion', fraisEntree: "Frais d'entrée", mensuel: 'Versement mensuel', inflation: "Taux d'inflation" }[key]}</span>
-        <span style={{ fontWeight: 500, color: '#0f1b35' }}>{key === 'duree' ? p[key] + ' ans' : key === 'capital' || key === 'mensuel' ? p[key].toLocaleString('fr-FR') + ' €' : p[key] + '%'}</span>
+        <span>{label}</span>
+        <span style={{ fontWeight: 500, color: '#0f1b35' }}>
+          {key === 'duree' ? p[key] + ' ans' : key === 'capital' || key === 'mensuel' ? p[key].toLocaleString('fr-FR') + ' €' : p[key].toFixed(2) + '%'}
+        </span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={p[key]} onChange={e => setP({ ...p, [key]: parseFloat(e.target.value) })} style={{ width: '100%' }} />
+      <input type="range" min={min} max={max} step={step} value={p[key]}
+        onChange={e => setP({ ...p, [key]: parseFloat(e.target.value) })}
+        style={{ width: '100%' }} />
     </div>
   )
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
       <div style={{ background: '#fff', border: '1px solid #e8eaf0', borderRadius: 14, padding: '20px' }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: '#4a5578', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 16 }}>Paramètres</div>
-        {sl('capital', 0, 500000, 1000)}{sl('duree', 1, 40)}{sl('taux', 0, 20, 0.1)}{sl('fraisGest', 0, 5, 0.1)}{sl('fraisEntree', 0, 10, 0.25)}
-        <div style={{ height: 1, background: '#e8eaf0', margin: '16px 0' }} />
+        {sl('capital', 0, 500000, 1000, 'Capital initial')}
+        {sl('duree', 1, 40, 1, 'Durée')}
+        {sl('taux', 0, 20, 0.1, 'Taux annuel brut')}
+        {sl('fraisGest', 0, 5, 0.01, 'Frais de gestion annuels')}
+        {sl('fraisEntree', 0, 10, 0.01, "Frais d'entrée")}
+        <div style={{ fontSize: 11, color: '#8a93b0', marginBottom: 16, padding: '8px 10px', background: '#f7f8fc', borderRadius: 7 }}>
+          Les frais d'entrée s'appliquent au versement initial et à chaque versement périodique. Les frais de gestion sont déduits chaque année avant capitalisation.
+        </div>
+        <div style={{ height: 1, background: '#e8eaf0', margin: '4px 0 16px' }} />
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4a5578', cursor: 'pointer', marginBottom: 12 }}>
           <input type="checkbox" checked={p.withVers} onChange={e => setP({ ...p, withVers: e.target.checked })} /> Versements périodiques
         </label>
-        {p.withVers && (<>
-          {sl('mensuel', 0, 5000, 50)}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>Fréquence</label>
-            <select value={p.freq} onChange={e => setP({ ...p, freq: parseInt(e.target.value) })} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13, background: '#fff' }}>
-              <option value={12}>Mensuelle</option><option value={4}>Trimestrielle</option><option value={1}>Annuelle</option>
-            </select>
-          </div>
-        </>)}
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4a5578', cursor: 'pointer', marginBottom: 12 }}>
-          <input type="checkbox" checked={p.withInflation} onChange={e => setP({ ...p, withInflation: e.target.checked })} /> Prendre en compte l'inflation
-        </label>
-        {p.withInflation && sl('inflation', 0, 10, 0.1)}
+        {p.withVers && (
+          <>
+            {sl('mensuel', 0, 5000, 50, 'Montant du versement')}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>Fréquence</label>
+              <select value={p.freq} onChange={e => setP({ ...p, freq: parseInt(e.target.value) })} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13, background: '#fff' }}>
+                <option value={12}>Mensuelle</option>
+                <option value={4}>Trimestrielle</option>
+                <option value={1}>Annuelle</option>
+              </select>
+            </div>
+          </>
+        )}
       </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ background: '#0f1b35', borderRadius: 14, padding: '20px' }}>
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Capital final estimé</div>
-          <div style={{ fontSize: 32, fontWeight: 500, color: '#e8b84b' }}>{fmt(Math.round(cap))}</div>
-          {p.withInflation && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Valeur réelle : {fmt(Math.round(capReel))}</div>}
+          <div style={{ fontSize: 32, fontWeight: 500, color: '#e8b84b' }}>{fmt(Math.round(capitalFinal))}</div>
           <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-            {[['Capital investi', fmt(Math.round(totalInvesti))], ['Intérêts nets', fmt(Math.round(totalInterets))], ['Total frais', fmt(Math.round(totalFrais))]].map(([l, v]) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, marginBottom: 16 }}>
+            {[['Capital investi (net frais)', fmt(Math.round(totalVersements))], ['Intérêts nets', fmt(Math.round(totalInterets))]].map(([l, v]) => (
               <div key={l} style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: 12 }}>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>{l}</div>
                 <div style={{ fontSize: 15, fontWeight: 500, color: '#fff' }}>{v}</div>
               </div>
             ))}
           </div>
+          {/* Barre de proportion */}
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Répartition du capital final</div>
+          <div style={{ height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', display: 'flex' }}>
+            <div style={{ width: propVersements + '%', background: '#3b82f6', transition: 'width 0.4s' }} />
+            <div style={{ width: propInterets + '%', background: '#e8b84b', transition: 'width 0.4s' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: '#3b82f6' }} />
+              Versements {Math.round(propVersements)}%
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: '#e8b84b' }} />
+              Intérêts {Math.round(propInterets)}%
+            </div>
+          </div>
         </div>
+
         <div style={{ background: '#fff', border: '1px solid #e8eaf0', borderRadius: 14, padding: '18px', maxHeight: 280, overflowY: 'auto' }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: '#4a5578', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12 }}>Tableau annuel</div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-            <thead><tr>{['Année', 'Capital début', 'Intérêts', 'Frais', 'Capital fin'].map(h => (
+            <thead><tr>{['Année', 'Capital début', 'Versements', 'Intérêts nets', 'Capital fin'].map(h => (
               <th key={h} style={{ textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#8a93b0', fontWeight: 500, textTransform: 'uppercase', borderBottom: '1px solid #e8eaf0' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{rows.map(r => (
               <tr key={r.y} style={{ borderBottom: '1px solid #f0f1f6' }}>
                 <td style={{ padding: '7px 8px', color: '#4a5578' }}>An {r.y}</td>
                 <td style={{ padding: '7px 8px' }}>{fmt(Math.round(r.debut))}</td>
+                <td style={{ padding: '7px 8px', color: '#1a5fa0' }}>{r.versements > 0 ? fmt(Math.round(r.versements)) : '—'}</td>
                 <td style={{ padding: '7px 8px', color: '#1d7a4e' }}>{fmt(Math.round(r.interets))}</td>
-                <td style={{ padding: '7px 8px', color: '#b83030' }}>{fmt(Math.round(r.fraisAn))}</td>
                 <td style={{ padding: '7px 8px', fontWeight: 500 }}>{fmt(Math.round(r.fin))}</td>
               </tr>
             ))}</tbody>
@@ -492,10 +466,14 @@ function Simulateur() {
   )
 }
 
+// ─── PROJECTIONS (formulaire inline comme patrimoine) ─────────────────────────
 function Projections({ userId }) {
   const [scenarios, setScenarios] = useState([])
   const [loading, setLoading] = useState(true)
-  const COLORS = ['#1d7a4e', '#1a5fa0', '#c9922a', '#9b2fa0', '#7a1d1d', '#1d6a7a']
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ nom: '', type_placement: 'Assurance-vie', capital_initial: '', taux_annuel: '', frais_gestion: '', frais_entree: '', duree_annees: '', versement_mensuel: '' })
+  const COLORS = ['#1d7a4e', '#1a5fa0', '#c9922a', '#9b2fa0', '#7a1d1d', '#1d6a7a', '#b83030', '#4a5578']
 
   useEffect(() => { loadProjections() }, [])
 
@@ -506,21 +484,35 @@ function Projections({ userId }) {
   }
 
   function calcFinal(s) {
-    const tauxNet = (s.taux_annuel - s.frais_gestion) / 100
-    let cap = s.capital_initial
-    for (let y = 0; y < s.duree_annees; y++) cap = cap + s.versement_mensuel * 12 + (cap + s.versement_mensuel * 6) * tauxNet
+    const capitalNet = s.capital_initial * (1 - (s.frais_entree || 0) / 100)
+    const annualVersNet = (s.versement_mensuel || 0) * 12 * (1 - (s.frais_entree || 0) / 100)
+    const tauxBrut = (s.taux_annuel || 0) / 100
+    const tauxFraisGest = (s.frais_gestion || 0) / 100
+    let cap = capitalNet
+    for (let y = 0; y < s.duree_annees; y++) {
+      cap += annualVersNet
+      cap += cap * tauxBrut - cap * tauxFraisGest
+    }
     return Math.round(cap)
   }
 
-  async function addScenario() {
-    const nom = prompt("Nom du scénario :", "Nouveau placement"); if (!nom) return
-    const taux = parseFloat(prompt("Taux annuel brut (%) :", "5")) || 5
-    const frais = parseFloat(prompt("Frais de gestion (%) :", "1")) || 1
-    const capital = parseFloat(prompt("Capital initial (€) :", "10000")) || 10000
-    const mensuel = parseFloat(prompt("Versement mensuel (€) :", "0")) || 0
-    const duree = parseInt(prompt("Durée (ans) :", "15")) || 15
-    const { data } = await supabase.from('projections').insert([{ user_id: userId, nom, type_placement: 'Personnalisé', capital_initial: capital, taux_annuel: taux, frais_gestion: frais, duree_annees: duree, versement_mensuel: mensuel }]).select()
+  async function handleAdd(e) {
+    e.preventDefault(); setSaving(true)
+    const payload = {
+      user_id: userId,
+      nom: form.nom,
+      type_placement: form.type_placement,
+      capital_initial: parseFloat(form.capital_initial) || 0,
+      taux_annuel: parseFloat(form.taux_annuel) || 0,
+      frais_gestion: parseFloat(form.frais_gestion) || 0,
+      frais_entree: parseFloat(form.frais_entree) || 0,
+      duree_annees: parseInt(form.duree_annees) || 10,
+      versement_mensuel: parseFloat(form.versement_mensuel) || 0,
+    }
+    const { data } = await supabase.from('projections').insert([payload]).select()
     if (data) setScenarios([...data, ...scenarios])
+    setForm({ nom: '', type_placement: 'Assurance-vie', capital_initial: '', taux_annuel: '', frais_gestion: '', frais_entree: '', duree_annees: '', versement_mensuel: '' })
+    setShowForm(false); setSaving(false)
   }
 
   async function deleteScenario(id) {
@@ -531,11 +523,52 @@ function Projections({ userId }) {
 
   if (loading) return <div style={{ textAlign: 'center', color: '#8a93b0', padding: '40px', fontSize: 14 }}>Chargement...</div>
 
+  const FIELDS = [
+    { label: 'Nom du scénario', key: 'nom', type: 'text', placeholder: 'Ex: Assurance-vie Cardif', full: true },
+    { label: 'Type de placement', key: 'type_placement', type: 'select', options: ['Assurance-vie', 'PER', 'PEA', 'SCPI', 'Livret', 'Immobilier locatif', 'Autre'] },
+    { label: 'Capital initial (€)', key: 'capital_initial', type: 'number', placeholder: '10000' },
+    { label: 'Taux annuel brut (%)', key: 'taux_annuel', type: 'number', placeholder: '5', step: '0.1' },
+    { label: 'Frais de gestion (%)', key: 'frais_gestion', type: 'number', placeholder: '1', step: '0.01' },
+    { label: "Frais d'entrée (%)", key: 'frais_entree', type: 'number', placeholder: '2', step: '0.01' },
+    { label: 'Durée (ans)', key: 'duree_annees', type: 'number', placeholder: '15' },
+    { label: 'Versement mensuel (€)', key: 'versement_mensuel', type: 'number', placeholder: '0' },
+  ]
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <button onClick={addScenario} style={{ background: '#c9922a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>+ Nouveau scénario</button>
+        <button onClick={() => setShowForm(!showForm)} style={{ background: '#c9922a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+          {showForm ? 'Annuler' : '+ Nouveau scénario'}
+        </button>
       </div>
+
+      {showForm && (
+        <div style={{ background: '#fff', border: '1px solid #e8eaf0', borderRadius: 14, padding: '20px', marginBottom: 16 }}>
+          <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 16 }}>Nouveau scénario de projection</div>
+          <form onSubmit={handleAdd}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              {FIELDS.map(f => (
+                <div key={f.key} style={f.full ? { gridColumn: '1 / -1' } : {}}>
+                  <label style={{ fontSize: 12, color: '#4a5578', fontWeight: 500, display: 'block', marginBottom: 5 }}>{f.label}</label>
+                  {f.type === 'select' ? (
+                    <select value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13, background: '#fff' }}>
+                      {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <input type={f.type} value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} step={f.step || undefined} style={{ width: '100%', padding: '8px 10px', border: '1px solid #e0e2ea', borderRadius: 7, fontSize: 13 }} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="submit" disabled={saving} style={{ background: '#c9922a', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+                {saving ? 'Enregistrement...' : 'Ajouter ce scénario'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {scenarios.length === 0 ? (
         <div style={{ textAlign: 'center', color: '#8a93b0', padding: '60px 0', fontSize: 14, background: '#fff', borderRadius: 14, border: '1px solid #e8eaf0' }}>
           Aucun scénario — cliquez sur "+ Nouveau scénario" pour commencer
@@ -544,29 +577,29 @@ function Projections({ userId }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
           {scenarios.map((s, i) => {
             const final = calcFinal(s)
-            const totalInv = s.capital_initial + s.versement_mensuel * 12 * s.duree_annees
+            const totalInv = s.capital_initial * (1 - (s.frais_entree || 0) / 100) + (s.versement_mensuel || 0) * 12 * s.duree_annees * (1 - (s.frais_entree || 0) / 100)
             const gain = final - totalInv
             const gainPct = totalInv > 0 ? (gain / totalInv * 100).toFixed(1) : 0
             const color = COLORS[i % COLORS.length]
             return (
               <div key={s.id} style={{ background: '#fff', border: '1px solid #e8eaf0', borderRadius: 14, padding: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div style={{ fontSize: 15, fontWeight: 500 }}>{s.nom}</div>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span style={{ background: color + '18', color, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 500 }}>{s.duree_annees} ans</span>
-                    <button onClick={() => deleteScenario(s.id)} style={{ background: '#faeaea', color: '#b83030', border: 'none', borderRadius: 6, padding: '3px 8px', fontSize: 12, cursor: 'pointer' }}>×</button>
-                  </div>
+                  <button onClick={() => deleteScenario(s.id)} style={{ background: '#faeaea', color: '#b83030', border: 'none', borderRadius: 6, padding: '3px 8px', fontSize: 12, cursor: 'pointer' }}>×</button>
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <span style={{ background: color + '18', color, padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 500 }}>{s.type_placement} · {s.duree_annees} ans</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                   {[['Capital final', fmt(final), null], ['Gain net', fmt(gain), '#1d7a4e'], ['Performance', '+' + gainPct + '%', null]].map(([l, v, c]) => (
                     <div key={l} style={{ background: '#f0f1f6', borderRadius: 8, padding: 10 }}>
                       <div style={{ fontSize: 10, color: '#8a93b0', marginBottom: 3 }}>{l}</div>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: c || '#0f1b35' }}>{v}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: c || '#0f1b35' }}>{v}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{ marginTop: 10, fontSize: 11, color: '#8a93b0' }}>
-                  Capital: {fmt(s.capital_initial)} · Mensuel: {s.versement_mensuel > 0 ? fmt(s.versement_mensuel) : '—'} · Taux net: {(s.taux_annuel - s.frais_gestion).toFixed(1)}%
+                  Capital: {fmt(s.capital_initial)} · Mensuel: {s.versement_mensuel > 0 ? fmt(s.versement_mensuel) : '—'} · Taux net: {((s.taux_annuel || 0) - (s.frais_gestion || 0)).toFixed(2)}%
                 </div>
               </div>
             )
@@ -577,6 +610,7 @@ function Projections({ userId }) {
   )
 }
 
+// ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -619,7 +653,7 @@ export default function App() {
   if (!user) return <AuthPage onLogin={setUser} />
 
   const titles = { dashboard: 'Tableau de bord', patrimoine: 'Patrimoine', simulateur: 'Simulateur financier', projections: 'Projections & Comparateur' }
-  const subs = { dashboard: 'Synthèse patrimoniale — cliquez sur un actif pour voir sa fiche', patrimoine: 'Gestion complète des actifs', simulateur: 'Intérêts composés, frais, versements', projections: 'Vos scénarios sauvegardés' }
+  const subs = { dashboard: 'Synthèse patrimoniale', patrimoine: 'Gestion complète des actifs', simulateur: 'Simulateur d\'intérêts composés', projections: 'Vos scénarios sauvegardés' }
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: 'system-ui, sans-serif' }}>

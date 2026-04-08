@@ -24,7 +24,6 @@ export default function EstimateurImmo({ onValider }) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef(null)
 
-  // Autocomplétion geo.api.gouv.fr — toutes communes France
   useEffect(() => {
     if (query.length < 2 || commune) { setSuggestions([]); return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -35,7 +34,7 @@ export default function EstimateurImmo({ onValider }) {
           `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(query)}&fields=nom,code,codesPostaux,population&boost=population&limit=8`
         )
         const data = await res.json()
-        setSuggestions(data)
+        setSuggestions(Array.isArray(data) ? data : [])
         setShowSuggestions(true)
       } catch (e) {
         setSuggestions([])
@@ -44,7 +43,6 @@ export default function EstimateurImmo({ onValider }) {
     }, 300)
   }, [query, commune])
 
-  // Appel proxy Vercel dès qu'une commune est sélectionnée
   useEffect(() => {
     if (!commune) return
     fetchPrix(commune.code, typeBien)
@@ -54,18 +52,10 @@ export default function EstimateurImmo({ onValider }) {
     setLoadingPrix(true)
     setPrixData(null)
     try {
-      const typeLocal = TYPE_MAP[type]
-      let url = `/api/dvf?code_commune=${codeCommune}`
-      if (typeLocal) url += `&type_local=${encodeURIComponent(typeLocal)}`
-
-      const res = await fetch(url)
+      const res = await fetch(`/api/dvf?code_commune=${codeCommune}&type_local=${encodeURIComponent(type)}`)
+      if (!res.ok) throw new Error("Erreur réseau")
       const data = await res.json()
-
-      if (data.error) {
-        setPrixData({ error: data.error })
-      } else {
-        setPrixData({ ...data, ok: true })
-      }
+      setPrixData(data)
     } catch (e) {
       setPrixData({ error: "Impossible de récupérer les données" })
     }
@@ -99,12 +89,8 @@ export default function EstimateurImmo({ onValider }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-
-        {/* Autocomplétion ville */}
         <div style={{ position: "relative" }}>
-          <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>
-            Ville ou commune
-          </label>
+          <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Ville ou commune</label>
           <div style={{ position: "relative" }}>
             <input
               type="text"
@@ -113,17 +99,10 @@ export default function EstimateurImmo({ onValider }) {
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder="Ex: Lyon, Brest..."
-              style={{
-                width: "100%", padding: "8px 10px", border: "1px solid",
-                borderColor: commune ? "#5dcaa5" : "#b5d4f4",
-                borderRadius: 7, fontSize: 13,
-                background: commune ? "#f0fff8" : "#fff"
-              }}
+              style={{ width: "100%", padding: "8px 10px", border: "1px solid", borderColor: commune ? "#5dcaa5" : "#b5d4f4", borderRadius: 7, fontSize: 13, background: commune ? "#f0fff8" : "#fff" }}
             />
             {loading && <span style={{ position: "absolute", right: 8, top: 9, fontSize: 11, color: "#8a93b0" }}>...</span>}
-            {commune && (
-              <span onClick={resetCommune} style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 16, color: "#8a93b0", lineHeight: 1 }}>×</span>
-            )}
+            {commune && <span onClick={resetCommune} style={{ position: "absolute", right: 8, top: 7, cursor: "pointer", fontSize: 18, color: "#8a93b0", lineHeight: 1 }}>×</span>}
           </div>
 
           {showSuggestions && suggestions.length > 0 && !commune && (
@@ -132,7 +111,7 @@ export default function EstimateurImmo({ onValider }) {
                 <div
                   key={c.code}
                   onMouseDown={e => { e.preventDefault(); selectCommune(c) }}
-                  style={{ padding: "9px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f1f6", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff" }}
+                  style={{ padding: "9px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f1f6", display: "flex", justifyContent: "space-between", background: "#fff" }}
                   onMouseEnter={e => e.currentTarget.style.background = "#f0f7ff"}
                   onMouseLeave={e => e.currentTarget.style.background = "#fff"}
                 >
@@ -146,14 +125,10 @@ export default function EstimateurImmo({ onValider }) {
           )}
         </div>
 
-        {/* Type de bien */}
         <div>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Type de bien</label>
-          <select
-            value={typeBien}
-            onChange={e => { setTypeBien(e.target.value); setPrixData(null) }}
-            style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13, background: "#fff" }}
-          >
+          <select value={typeBien} onChange={e => { setTypeBien(e.target.value); setPrixData(null) }}
+            style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13, background: "#fff" }}>
             <option value="appartement">Appartement</option>
             <option value="maison">Maison</option>
             <option value="immeuble">Immeuble</option>
@@ -161,38 +136,28 @@ export default function EstimateurImmo({ onValider }) {
           </select>
         </div>
 
-        {/* Surface */}
         <div>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Surface (m²)</label>
-          <input
-            type="number"
-            value={surface}
-            onChange={e => setSurface(e.target.value)}
-            placeholder="Ex: 65"
-            min="1"
-            style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13 }}
-          />
+          <input type="number" value={surface} onChange={e => setSurface(e.target.value)} placeholder="Ex: 65" min="1"
+            style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13 }} />
         </div>
       </div>
 
-      {/* Résultat */}
       {commune && (
         <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px" }}>
           {loadingPrix ? (
-            <div style={{ fontSize: 13, color: "#1a5fa0", textAlign: "center", padding: "10px 0" }}>
-              Récupération des données DVF pour {commune.nom}...
+            <div style={{ fontSize: 13, color: "#1a5fa0", textAlign: "center", padding: "8px 0" }}>
+              Chargement des données DVF pour {commune.nom}...
             </div>
           ) : prixData?.error ? (
-            <div style={{ fontSize: 13, color: "#b83030" }}>
-              {prixData.error} — essayez une commune voisine plus grande
-            </div>
+            <div style={{ fontSize: 13, color: "#b83030" }}>{prixData.error}</div>
           ) : prixData?.ok ? (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: estimation ? 14 : 0 }}>
                 {[
                   ["Prix médian/m²", Math.round(prixData.mediane).toLocaleString("fr-FR") + " €"],
                   ["Fourchette", Math.round(prixData.min).toLocaleString("fr-FR") + " – " + Math.round(prixData.max).toLocaleString("fr-FR") + " €/m²"],
-                  ["Transactions", prixData.nb + " ventes analysées"],
+                  ["Transactions " + (prixData.annee || ""), prixData.nb + " ventes"],
                 ].map(([l, v]) => (
                   <div key={l} style={{ background: "#f0f7ff", borderRadius: 8, padding: "10px 12px" }}>
                     <div style={{ fontSize: 10, color: "#1a5fa0", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.4px" }}>{l}</div>
@@ -202,7 +167,7 @@ export default function EstimateurImmo({ onValider }) {
               </div>
 
               {estimation ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f0fff8", border: "1px solid #9fe1cb", borderRadius: 9, padding: "12px 14px", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f0fff8", border: "1px solid #9fe1cb", borderRadius: 9, padding: "12px 14px", gap: 12, marginTop: 14 }}>
                   <div>
                     <div style={{ fontSize: 12, color: "#4a5578", marginBottom: 3 }}>
                       {typeBien} de {surface} m² à {commune.nom} — {Math.round(prixData.mediane).toLocaleString("fr-FR")} €/m²
@@ -212,22 +177,18 @@ export default function EstimateurImmo({ onValider }) {
                       Fourchette : {fmt(Math.round(prixData.min * parseFloat(surface)))} — {fmt(Math.round(prixData.max * parseFloat(surface)))}
                     </div>
                   </div>
-                  <button
-                    onClick={() => onValider(estimation)}
-                    style={{ background: "#1d7a4e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}
-                  >
+                  <button onClick={() => onValider(estimation)}
+                    style={{ background: "#1d7a4e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}>
                     Utiliser →
                   </button>
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "#4a5578" }}>
-                  Entrez la surface pour obtenir une estimation
-                </div>
+                <div style={{ fontSize: 13, color: "#4a5578", marginTop: 10 }}>Entrez la surface pour obtenir l'estimation</div>
               )}
 
               <div style={{ fontSize: 11, color: "#8a93b0", marginTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ background: "#e8f5ee", color: "#1d7a4e", padding: "2px 7px", borderRadius: 4, fontWeight: 500 }}>Officiel</span>
-                Données DVF — DGFiP · Mise à jour semestrielle (avril & octobre)
+                Données DVF — DGFiP · Mise à jour semestrielle
               </div>
             </div>
           ) : null}

@@ -16,7 +16,18 @@ export default function EstimateurImmo({ onValider }) {
   const [loadingPrix, setLoadingPrix] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef(null)
-  const selectingRef = useRef(false)
+  const wrapperRef = useRef(null)
+
+  // Ferme les suggestions si clic en dehors
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   useEffect(() => {
     if (query.length < 2 || commune) { setSuggestions([]); setShowSuggestions(false); return }
@@ -46,14 +57,16 @@ export default function EstimateurImmo({ onValider }) {
   }
 
   function selectCommune(c) {
-    selectingRef.current = false
     setCommune(c)
     setQuery(c.nom + (c.codesPostaux?.[0] ? " (" + c.codesPostaux[0] + ")" : ""))
-    setSuggestions([]); setShowSuggestions(false); setPrixData(null)
+    setSuggestions([])
+    setShowSuggestions(false)
+    setPrixData(null)
   }
 
   function resetCommune() {
-    setCommune(null); setQuery(""); setPrixData(null); setSuggestions([]); setShowSuggestions(false)
+    setCommune(null); setQuery(""); setPrixData(null)
+    setSuggestions([]); setShowSuggestions(false)
   }
 
   const prixM2 = prixData?.ok ? Math.round(prixData.mediane) : null
@@ -61,30 +74,33 @@ export default function EstimateurImmo({ onValider }) {
 
   return (
     <div style={{ background: "#e6f0fb", border: "1px solid #b5d4f4", borderRadius: 12, padding: "16px 18px", marginBottom: 16 }}>
-      <div style={{ fontSize: 13, fontWeight: 500, color: "#0c447c", marginBottom: 12 }}>Estimateur — données officielles DVF (transactions notariales)</div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: "#0c447c", marginBottom: 12 }}>
+        Estimateur — données officielles DVF (transactions notariales)
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <div style={{ position: "relative" }}>
+        <div ref={wrapperRef} style={{ position: "relative" }}>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Ville ou commune</label>
           <div style={{ position: "relative" }}>
             <input type="text" value={query}
               onChange={e => { setQuery(e.target.value); if (commune) resetCommune() }}
               onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
-              onBlur={() => { if (!selectingRef.current) setShowSuggestions(false) }}
               placeholder="Ex: Lyon, Brest..."
-              style={{ width: "100%", padding: "8px 10px", border: "1px solid", borderColor: commune ? "#5dcaa5" : "#b5d4f4", borderRadius: 7, fontSize: 13, background: commune ? "#f0fff8" : "#fff" }} />
+              style={{ width: "100%", padding: "8px 10px", border: "1px solid", borderColor: commune ? "#5dcaa5" : "#b5d4f4", borderRadius: 7, fontSize: 13, background: commune ? "#f0fff8" : "#fff" }}
+            />
             {loading && <span style={{ position: "absolute", right: 8, top: 9, fontSize: 11, color: "#8a93b0" }}>...</span>}
-            {commune && <button onClick={resetCommune} style={{ position: "absolute", right: 6, top: 5, background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#8a93b0", padding: "2px 4px" }}>×</button>}
+            {commune && (
+              <button onClick={resetCommune} style={{ position: "absolute", right: 6, top: 5, background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#8a93b0", padding: "2px 4px" }}>×</button>
+            )}
           </div>
           {showSuggestions && suggestions.length > 0 && !commune && (
             <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #b5d4f4", borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,0.12)", zIndex: 999, marginTop: 2, overflow: "hidden" }}>
               {suggestions.map(c => (
                 <div key={c.code}
-                  onMouseEnter={() => { selectingRef.current = true }}
-                  onMouseLeave={() => { selectingRef.current = false }}
                   onClick={() => selectCommune(c)}
                   style={{ padding: "10px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f1f6", display: "flex", justifyContent: "space-between", background: "#fff" }}
                   onMouseOver={e => e.currentTarget.style.background = "#f0f7ff"}
-                  onMouseOut={e => e.currentTarget.style.background = "#fff"}>
+                  onMouseOut={e => e.currentTarget.style.background = "#fff"}
+                >
                   <span style={{ fontWeight: 500 }}>{c.nom}</span>
                   <span style={{ fontSize: 11, color: "#8a93b0" }}>{c.codesPostaux?.[0]}{c.population ? " · " + (c.population > 1000 ? Math.round(c.population / 1000) + "k hab." : c.population + " hab.") : ""}</span>
                 </div>
@@ -92,6 +108,7 @@ export default function EstimateurImmo({ onValider }) {
             </div>
           )}
         </div>
+
         <div>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Type de bien</label>
           <select value={typeBien} onChange={e => { setTypeBien(e.target.value); setPrixData(null) }}
@@ -102,12 +119,14 @@ export default function EstimateurImmo({ onValider }) {
             <option value="terrain">Terrain</option>
           </select>
         </div>
+
         <div>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Surface (m²)</label>
           <input type="number" value={surface} onChange={e => setSurface(e.target.value)} placeholder="Ex: 65" min="1"
             style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13 }} />
         </div>
       </div>
+
       {commune && (
         <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px" }}>
           {loadingPrix ? (

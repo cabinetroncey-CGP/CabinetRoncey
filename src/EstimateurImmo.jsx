@@ -5,6 +5,13 @@ function fmt(n) {
   return Math.round(n).toLocaleString("fr-FR") + " €"
 }
 
+const TYPE_MAP = {
+  appartement: "Appartement",
+  maison: "Maison",
+  immeuble: null,
+  terrain: null,
+}
+
 export default function EstimateurImmo({ onValider }) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState([])
@@ -17,7 +24,7 @@ export default function EstimateurImmo({ onValider }) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef(null)
 
-  // Autocomplétion toutes communes de France
+  // Autocomplétion geo.api.gouv.fr — toutes communes France
   useEffect(() => {
     if (query.length < 2 || commune) { setSuggestions([]); return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -37,7 +44,7 @@ export default function EstimateurImmo({ onValider }) {
     }, 300)
   }, [query, commune])
 
-  // Prix DVF via explore.data.gouv.fr — accessible depuis navigateur
+  // Appel proxy Vercel dès qu'une commune est sélectionnée
   useEffect(() => {
     if (!commune) return
     fetchPrix(commune.code, typeBien)
@@ -47,73 +54,20 @@ export default function EstimateurImmo({ onValider }) {
     setLoadingPrix(true)
     setPrixData(null)
     try {
-      const typeMap = { appartement: "Appartement", maison: "Maison", immeuble: "Maison", terrain: "Terrain" }
-      const typeLocal = typeMap[type]
+      const typeLocal = TYPE_MAP[type]
+      let url = `/api/dvf?code_commune=${codeCommune}`
+      if (typeLocal) url += `&type_local=${encodeURIComponent(typeLocal)}`
 
-      // API explore.data.gouv.fr — données DVF agrégées par commune
-      const url = `https://explore.data.gouv.fr/api/v1/datasets/5cc1b94a634f4165e96436c1/records/?where=code_commune%3D%22${codeCommune}%22&limit=100`
       const res = await fetch(url)
-
-      if (!res.ok) throw new Error("API indisponible")
       const data = await res.json()
 
-      if (data.results && data.results.length > 0) {
-        // Filtrer par type de bien et prendre les données les plus récentes
-        const filtered = data.results.filter(r =>
-          r.type_local && r.type_local.toLowerCase().includes(typeLocal.toLowerCase().substring(0, 4))
-        )
-        const records = filtered.length > 0 ? filtered : data.results
-
-        const prixM2List = records
-          .map(r => parseFloat(r.prix_m2_median || r.prix_m2_moyen || 0))
-          .filter(p => p > 300 && p < 30000)
-
-        if (prixM2List.length > 0) {
-          prixM2List.sort((a, b) => a - b)
-          const mediane = prixM2List[Math.floor(prixM2List.length / 2)]
-          const min = prixM2List[Math.floor(prixM2List.length * 0.1)] || prixM2List[0]
-          const max = prixM2List[Math.floor(prixM2List.length * 0.9)] || prixM2List[prixM2List.length - 1]
-          const nb = records.reduce((s, r) => s + (parseInt(r.nombre_mutations) || 1), 0)
-          setPrixData({ mediane, min, max, nb, ok: true })
-          setLoadingPrix(false)
-          return
-        }
+      if (data.error) {
+        setPrixData({ error: data.error })
+      } else {
+        setPrixData({ ...data, ok: true })
       }
-
-      // Fallback : API DVF publique via api.gouv.fr
-      await fetchPrixFallback(codeCommune, typeLocal)
     } catch (e) {
-      await fetchPrixFallback(codeCommune, typeBien)
-    }
-  }
-
-  async function fetchPrixFallback(codeCommune, typeLocal) {
-    try {
-      // Données DVF statistiques par commune via data.gouv.fr datasets
-      const url = `https://tabular-api.data.gouv.fr/api/resources/90a98de0-f562-4328-aa16-fe0dd1dca60f/data/?code_commune__exact=${codeCommune}&page_size=50`
-      const res = await fetch(url)
-      if (!res.ok) throw new Error()
-      const data = await res.json()
-
-      if (data.data && data.data.length > 0) {
-        const rows = data.data.filter(r => {
-          if (!typeLocal) return true
-          const t = (r.type_local || "").toLowerCase()
-          return t.includes(typeLocal.toLowerCase().substring(0, 4))
-        })
-        const src = rows.length > 0 ? rows : data.data
-        const prix = src.map(r => parseFloat(r.prix_m2_median || r.valeur_fonciere || 0) / (parseFloat(r.surface_reelle_bati) || 1)).filter(p => p > 300 && p < 30000)
-
-        if (prix.length > 0) {
-          prix.sort((a, b) => a - b)
-          setPrixData({ mediane: prix[Math.floor(prix.length / 2)], min: prix[0], max: prix[prix.length - 1], nb: prix.length, ok: true })
-          setLoadingPrix(false)
-          return
-        }
-      }
-      setPrixData({ error: "Données insuffisantes pour cette commune — essayez une ville voisine plus grande" })
-    } catch (e) {
-      setPrixData({ error: "Impossible de récupérer les données DVF pour cette commune" })
+      setPrixData({ error: "Impossible de récupérer les données" })
     }
     setLoadingPrix(false)
   }
@@ -146,7 +100,7 @@ export default function EstimateurImmo({ onValider }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
 
-        {/* Champ ville avec autocomplétion */}
+        {/* Autocomplétion ville */}
         <div style={{ position: "relative" }}>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>
             Ville ou commune
@@ -159,14 +113,16 @@ export default function EstimateurImmo({ onValider }) {
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder="Ex: Lyon, Brest..."
-              style={{ width: "100%", padding: "8px 10px", border: "1px solid #b5d4f4", borderRadius: 7, fontSize: 13, background: commune ? "#f0fff8" : "#fff", borderColor: commune ? "#5dcaa5" : "#b5d4f4" }}
+              style={{
+                width: "100%", padding: "8px 10px", border: "1px solid",
+                borderColor: commune ? "#5dcaa5" : "#b5d4f4",
+                borderRadius: 7, fontSize: 13,
+                background: commune ? "#f0fff8" : "#fff"
+              }}
             />
             {loading && <span style={{ position: "absolute", right: 8, top: 9, fontSize: 11, color: "#8a93b0" }}>...</span>}
             {commune && (
-              <span
-                onClick={resetCommune}
-                style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 14, color: "#8a93b0", lineHeight: 1 }}
-              >×</span>
+              <span onClick={resetCommune} style={{ position: "absolute", right: 8, top: 8, cursor: "pointer", fontSize: 16, color: "#8a93b0", lineHeight: 1 }}>×</span>
             )}
           </div>
 
@@ -219,7 +175,7 @@ export default function EstimateurImmo({ onValider }) {
         </div>
       </div>
 
-      {/* Zone résultat */}
+      {/* Résultat */}
       {commune && (
         <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px" }}>
           {loadingPrix ? (
@@ -228,7 +184,7 @@ export default function EstimateurImmo({ onValider }) {
             </div>
           ) : prixData?.error ? (
             <div style={{ fontSize: 13, color: "#b83030" }}>
-              {prixData.error}
+              {prixData.error} — essayez une commune voisine plus grande
             </div>
           ) : prixData?.ok ? (
             <div>

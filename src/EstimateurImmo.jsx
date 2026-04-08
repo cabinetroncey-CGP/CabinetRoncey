@@ -5,13 +5,6 @@ function fmt(n) {
   return Math.round(n).toLocaleString("fr-FR") + " €"
 }
 
-const TYPE_MAP = {
-  appartement: "Appartement",
-  maison: "Maison",
-  immeuble: null,
-  terrain: null,
-}
-
 export default function EstimateurImmo({ onValider }) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState([])
@@ -23,9 +16,11 @@ export default function EstimateurImmo({ onValider }) {
   const [loadingPrix, setLoadingPrix] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const debounceRef = useRef(null)
+  const containerRef = useRef(null)
+  const selectingRef = useRef(false)
 
   useEffect(() => {
-    if (query.length < 2 || commune) { setSuggestions([]); return }
+    if (query.length < 2 || commune) { setSuggestions([]); setShowSuggestions(false); return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       setLoading(true)
@@ -63,6 +58,7 @@ export default function EstimateurImmo({ onValider }) {
   }
 
   function selectCommune(c) {
+    selectingRef.current = false
     setCommune(c)
     setQuery(c.nom + (c.codesPostaux?.[0] ? " (" + c.codesPostaux[0] + ")" : ""))
     setSuggestions([])
@@ -75,6 +71,7 @@ export default function EstimateurImmo({ onValider }) {
     setQuery("")
     setPrixData(null)
     setSuggestions([])
+    setShowSuggestions(false)
   }
 
   const prixM2 = prixData?.ok ? Math.round(prixData.mediane) : null
@@ -89,20 +86,25 @@ export default function EstimateurImmo({ onValider }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <div style={{ position: "relative" }}>
+        <div ref={containerRef} style={{ position: "relative" }}>
           <label style={{ fontSize: 11, color: "#1a5fa0", fontWeight: 500, display: "block", marginBottom: 4 }}>Ville ou commune</label>
           <div style={{ position: "relative" }}>
             <input
               type="text"
               value={query}
               onChange={e => { setQuery(e.target.value); if (commune) resetCommune() }}
-              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
+              onBlur={() => { if (!selectingRef.current) setShowSuggestions(false) }}
               placeholder="Ex: Lyon, Brest..."
               style={{ width: "100%", padding: "8px 10px", border: "1px solid", borderColor: commune ? "#5dcaa5" : "#b5d4f4", borderRadius: 7, fontSize: 13, background: commune ? "#f0fff8" : "#fff" }}
             />
             {loading && <span style={{ position: "absolute", right: 8, top: 9, fontSize: 11, color: "#8a93b0" }}>...</span>}
-            {commune && <span onClick={resetCommune} style={{ position: "absolute", right: 8, top: 7, cursor: "pointer", fontSize: 18, color: "#8a93b0", lineHeight: 1 }}>×</span>}
+            {commune && (
+              <button
+                onClick={resetCommune}
+                style={{ position: "absolute", right: 6, top: 5, background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#8a93b0", padding: "2px 4px", lineHeight: 1 }}
+              >×</button>
+            )}
           </div>
 
           {showSuggestions && suggestions.length > 0 && !commune && (
@@ -110,10 +112,12 @@ export default function EstimateurImmo({ onValider }) {
               {suggestions.map(c => (
                 <div
                   key={c.code}
-                  onMouseDown={e => { e.preventDefault(); selectCommune(c) }}
-                  style={{ padding: "9px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f1f6", display: "flex", justifyContent: "space-between", background: "#fff" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#f0f7ff"}
-                  onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                  onMouseEnter={() => { selectingRef.current = true }}
+                  onMouseLeave={() => { selectingRef.current = false }}
+                  onClick={() => selectCommune(c)}
+                  style={{ padding: "10px 12px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f0f1f6", display: "flex", justifyContent: "space-between", background: "#fff" }}
+                  onMouseOver={e => e.currentTarget.style.background = "#f0f7ff"}
+                  onMouseOut={e => e.currentTarget.style.background = "#fff"}
                 >
                   <span style={{ fontWeight: 500 }}>{c.nom}</span>
                   <span style={{ fontSize: 11, color: "#8a93b0" }}>
@@ -153,7 +157,7 @@ export default function EstimateurImmo({ onValider }) {
             <div style={{ fontSize: 13, color: "#b83030" }}>{prixData.error}</div>
           ) : prixData?.ok ? (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: estimation ? 14 : 0 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
                 {[
                   ["Prix médian/m²", Math.round(prixData.mediane).toLocaleString("fr-FR") + " €"],
                   ["Fourchette", Math.round(prixData.min).toLocaleString("fr-FR") + " – " + Math.round(prixData.max).toLocaleString("fr-FR") + " €/m²"],
